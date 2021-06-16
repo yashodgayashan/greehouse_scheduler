@@ -57,17 +57,25 @@ public class HarvestingController {
         System.out.println("Hiii");
     }
 
-
     @Scheduled(fixedRate = 5000)
-    public void reportCurrsentTime() {
-        generatePlantDiseaseBadulla(1, 2);
-        System.out.println("Hiii");
+    public void plantDiseaseGenerator() {
+        int plantId = (int) ((Math.random() * (4 - 1)) + 1);
+        int locationId = (int) ((Math.random() * (4 - 1)) + 1);
+        selectGreenhouse(plantId, locationId);
     }
 
-
-    // // Different range for different places
-
-    // Different
+    public void selectGreenhouse(int plantId, int locationId) {
+        if (locationId == 1) {
+            int greenhouseNumber = (int) ((Math.random() * (3 - 1)) + 1);
+            generatePlantDiseaseBadulla(plantId, greenhouseNumber);
+        } else if (locationId == 2) {
+            int greenhouseNumber = (int) ((Math.random() * (5 - 3)) + 3);
+            generatePlantDiseasePadukka(plantId, greenhouseNumber);
+        } else {
+            int greenhouseNumber = (int) ((Math.random() * (7 - 5)) + 5);
+            generatePlantDiseasePuttalam(plantId, greenhouseNumber);
+        }
+    }
 
     public  LocalDate between(LocalDate startInclusive, LocalDate endExclusive) {
         long startEpochDay = startInclusive.toEpochDay();
@@ -80,9 +88,27 @@ public class HarvestingController {
     }
 
     public int generatePlantDiseaseBadulla(int plantId, int greenhouseId) {
-        int diseaseId = generateDiseaseId(1);
+        int diseaseId = generateDiseaseId(plantId);
         int solutionId = generateSolutionId(diseaseId);
         int date = generateDateRangeBadulla(solutionId);
+        LocalDate startDate = between(start, end);
+        LocalDate endDate =  startDate.plusDays(date);
+        return harvestingDbHandler.addPlantDisease(plantId, greenhouseId, diseaseId, solutionId, startDate.toString(), endDate.toString());
+    }
+
+    public int generatePlantDiseasePadukka(int plantId, int greenhouseId) {
+        int diseaseId = generateDiseaseId(plantId);
+        int solutionId = generateSolutionId(diseaseId);
+        int date = generateDateRangePadukka(solutionId);
+        LocalDate startDate = between(start, end);
+        LocalDate endDate =  startDate.plusDays(date);
+        return harvestingDbHandler.addPlantDisease(plantId, greenhouseId, diseaseId, solutionId, startDate.toString(), endDate.toString());
+    }
+
+    public int generatePlantDiseasePuttalam(int plantId, int greenhouseId) {
+        int diseaseId = generateDiseaseId(plantId);
+        int solutionId = generateSolutionId(diseaseId);
+        int date = generateDateRangePuttalam(solutionId);
         LocalDate startDate = between(start, end);
         LocalDate endDate =  startDate.plusDays(date);
         return harvestingDbHandler.addPlantDisease(plantId, greenhouseId, diseaseId, solutionId, startDate.toString(), endDate.toString());
@@ -114,4 +140,25 @@ public class HarvestingController {
         }
     }
 
+    public int generateDateRangePadukka(int solutionId) {
+        int num = solutionId % 3;
+        if (num == 0) {
+            return (int) ((Math.random() * (7 - 4)) + 4);
+        } else if (num == 1) {
+            return (int) ((Math.random() * (6 - 2)) + 2);
+        } else {
+            return (int) ((Math.random() * (9 - 5)) + 5);
+        }
+    }
+
+    public int generateDateRangePuttalam(int solutionId) {
+        int num = solutionId % 3;
+        if (num == 0) {
+            return (int) ((Math.random() * (6 - 2)) + 2);
+        } else if (num == 1) {
+            return (int) ((Math.random() * (9 - 5)) + 5);
+        } else {
+            return (int) ((Math.random() * (7 - 4)) + 4);
+        }
+    }
 }
