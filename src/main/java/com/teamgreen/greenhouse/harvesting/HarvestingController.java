@@ -18,7 +18,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.teamgreen.greenhouse.constants.Constants.INTERNAL_SERVER_ERROR_MSG;
 
@@ -33,11 +37,15 @@ public class HarvestingController {
     @Autowired
     RestTemplate restTemplate;
 
-    @Value("${remote.harvest.url}")
-    private String remoteUrl;
-
     private static final Logger logger = LoggerFactory.getLogger(HarvestingController.class);
-    FileUtils fileUtils;
+    private HarvestingDbHandler harvestingDbHandler;
+    LocalDate start = LocalDate.of(2019, Month.OCTOBER, 14);
+    LocalDate end = LocalDate.now();
+
+    @PostConstruct
+    void setJdbcHandlers() {
+        harvestingDbHandler = new HarvestingDbHandler(jdbc, namedParamJdbc);
+    }
 
     @GetMapping("/")
     public ResponseEntity harvest()  {
@@ -52,6 +60,58 @@ public class HarvestingController {
 
     @Scheduled(fixedRate = 5000)
     public void reportCurrsentTime() {
-        System.out.println("byiii");
+        generatePlantDiseaseBadulla(1, 2);
+        System.out.println("Hiii");
     }
+
+
+    // // Different range for different places
+
+    // Different
+
+    public  LocalDate between(LocalDate startInclusive, LocalDate endExclusive) {
+        long startEpochDay = startInclusive.toEpochDay();
+        long endEpochDay = endExclusive.toEpochDay();
+        long randomDay = ThreadLocalRandom
+                .current()
+                .nextLong(startEpochDay, endEpochDay);
+
+        return LocalDate.ofEpochDay(randomDay);
+    }
+
+    public int generatePlantDiseaseBadulla(int plantId, int greenhouseId) {
+        int diseaseId = generateDiseaseId(1);
+        int solutionId = generateSolutionId(diseaseId);
+        int date = generateDateRangeBadulla(solutionId);
+        LocalDate startDate = between(start, end);
+        LocalDate endDate =  startDate.plusDays(date);
+        return harvestingDbHandler.addPlantDisease(plantId, greenhouseId, diseaseId, solutionId, startDate.toString(), endDate.toString());
+    }
+
+    public int generateDiseaseId(int plantId){
+        if (plantId == 1) {
+            return (int) ((Math.random() * (10 - 1)) + 1);
+        } else if (plantId == 2) {
+            return (int) ((Math.random() * (12 - 10)) + 10);
+        } else {
+            return 12;
+        }
+    }
+
+    public int generateSolutionId(int diseaseid) {
+        int num = (int) ((Math.random() * (4 - 1)) + 1);
+        return ((diseaseid - 1) * 3) + num;
+    }
+
+    public int generateDateRangeBadulla(int solutionId) {
+        int num = solutionId % 3;
+        if (num == 0) {
+            return (int) ((Math.random() * (9 - 5)) + 5);
+        } else if (num == 1) {
+            return (int) ((Math.random() * (7 - 4)) + 4);
+        } else {
+            return (int) ((Math.random() * (6 - 2)) + 2);
+        }
+    }
+
 }
