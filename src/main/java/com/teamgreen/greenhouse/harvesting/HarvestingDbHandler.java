@@ -4,7 +4,10 @@ import com.teamgreen.greenhouse.store.DbHandler;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import java.util.Random;
+
 import static com.teamgreen.greenhouse.utils.MiscellaneousUtils.*;
+import static com.teamgreen.greenhouse.harvesting.Constants.*;
 
 public class HarvestingDbHandler extends DbHandler {
 
@@ -13,38 +16,44 @@ public class HarvestingDbHandler extends DbHandler {
     }
 
     int addTemperature(long nodeSensorId)  {
-        final String insertQuery =
-                "INSERT INTO " + GREENHOUSES_TABLE + " ("  + withComma(GREENHOUSE_NAME) + withComma(GREENHOUSE_LOCATION)
-                        + withComma(GREENHOUSE_LOCATIONS_ID) + withComma(GREENHOUSE_HEIGHT) + withComma(GREENHOUSE_LENGTH)
-                        + withComma(GREENHOUSE_WIDTH) + encapFieldWithBackTick(GREENHOUSE_IMAGE_URL) + ") VALUES "
-                        + getStatementParams(7);
+        double upperLimit = 26.66;
+        double lowerLimit = 23.88;
 
-        return this.jdbcTemplate().update(insertQuery, greenhouse.getName(), greenhouse.getLocation(),
-                greenhouse.getLocationId(), greenhouse.getHeight(), greenhouse.getLength(), greenhouse.getWidth(),
-                greenhouse.getImageURL());
+        Random rand = new Random();
+        double randomNumber = lowerLimit + (upperLimit - lowerLimit)*rand.nextDouble();
+
+        final String insertQuery =
+                "INSERT INTO " + DATA_TABLE + " ("  + withComma(DATA_DATA) + encapFieldWithBackTick(DATA_NODE_SENSOR_ID) + ") VALUES "
+                        + getStatementParams(2);
+
+        return this.jdbcTemplate().update(insertQuery, Math.round(randomNumber*100.0)/100.0, nodeSensorId);
     }
 
-    int addTemperature(long nodeSensorId)  {
-        final String insertQuery =
-                "INSERT INTO " + GREENHOUSES_TABLE + " ("  + withComma(GREENHOUSE_NAME) + withComma(GREENHOUSE_LOCATION)
-                        + withComma(GREENHOUSE_LOCATIONS_ID) + withComma(GREENHOUSE_HEIGHT) + withComma(GREENHOUSE_LENGTH)
-                        + withComma(GREENHOUSE_WIDTH) + encapFieldWithBackTick(GREENHOUSE_IMAGE_URL) + ") VALUES "
-                        + getStatementParams(7);
+    int addHumidity(long nodeSensorId)  {
+        double upperLimit = 60;
+        double lowerLimit = 70;
 
-        return this.jdbcTemplate().update(insertQuery, greenhouse.getName(), greenhouse.getLocation(),
-                greenhouse.getLocationId(), greenhouse.getHeight(), greenhouse.getLength(), greenhouse.getWidth(),
-                greenhouse.getImageURL());
+        Random rand = new Random();
+        double randomNumber = lowerLimit + (upperLimit - lowerLimit)*rand.nextDouble();
+
+        final String insertQuery =
+                "INSERT INTO " + DATA_TABLE + " ("  + withComma(DATA_DATA) + encapFieldWithBackTick(DATA_NODE_SENSOR_ID) + ") VALUES "
+                        + getStatementParams(2);
+
+        return this.jdbcTemplate().update(insertQuery, Math.round(randomNumber*100.0)/100.0, nodeSensorId);
     }
 
-    int addTemperature(long nodeSensorId)  {
-        final String insertQuery =
-                "INSERT INTO " + GREENHOUSES_TABLE + " ("  + withComma(GREENHOUSE_NAME) + withComma(GREENHOUSE_LOCATION)
-                        + withComma(GREENHOUSE_LOCATIONS_ID) + withComma(GREENHOUSE_HEIGHT) + withComma(GREENHOUSE_LENGTH)
-                        + withComma(GREENHOUSE_WIDTH) + encapFieldWithBackTick(GREENHOUSE_IMAGE_URL) + ") VALUES "
-                        + getStatementParams(7);
+    int addLightIntensity(long nodeSensorId)  {
+        double upperLimit = 70;
+        double lowerLimit = 80;
 
-        return this.jdbcTemplate().update(insertQuery, greenhouse.getName(), greenhouse.getLocation(),
-                greenhouse.getLocationId(), greenhouse.getHeight(), greenhouse.getLength(), greenhouse.getWidth(),
-                greenhouse.getImageURL());
+        Random rand = new Random();
+        double randomNumber = lowerLimit + (upperLimit - lowerLimit)*rand.nextDouble();
+
+        final String insertQuery =
+                "INSERT INTO " + DATA_TABLE + " ("  + withComma(DATA_DATA) + encapFieldWithBackTick(DATA_NODE_SENSOR_ID) + ") VALUES "
+                        + getStatementParams(2);
+
+        return this.jdbcTemplate().update(insertQuery, Math.round(randomNumber*100.0)/100.0, nodeSensorId);
     }
 }
