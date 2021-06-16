@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.Random;
+import java.sql.Timestamp;
 
 import static com.teamgreen.greenhouse.utils.MiscellaneousUtils.*;
 import static com.teamgreen.greenhouse.harvesting.Constants.*;
@@ -43,17 +44,27 @@ public class HarvestingDbHandler extends DbHandler {
         return this.jdbcTemplate().update(insertQuery, Math.round(randomNumber*100.0)/100.0, nodeSensorId);
     }
 
-    int addLightIntensity(long nodeSensorId)  {
+    int addLightIntensity(long nodeSensorId) {
         double upperLimit = 70;
         double lowerLimit = 80;
 
         Random rand = new Random();
-        double randomNumber = lowerLimit + (upperLimit - lowerLimit)*rand.nextDouble();
+        double randomNumber = lowerLimit + (upperLimit - lowerLimit) * rand.nextDouble();
 
         final String insertQuery =
-                "INSERT INTO " + DATA_TABLE + " ("  + withComma(DATA_DATA) + encapFieldWithBackTick(DATA_NODE_SENSOR_ID) + ") VALUES "
+                "INSERT INTO " + DATA_TABLE + " (" + withComma(DATA_DATA) + encapFieldWithBackTick(DATA_NODE_SENSOR_ID) + ") VALUES "
                         + getStatementParams(2);
 
-        return this.jdbcTemplate().update(insertQuery, Math.round(randomNumber*100.0)/100.0, nodeSensorId);
+        return this.jdbcTemplate().update(insertQuery, Math.round(randomNumber * 100.0) / 100.0, nodeSensorId);
+    }
+
+    public int addPlantDisease(int plantId, int greenhouseId, int diseaseId, int solutionId, String appliedDate, String resolvedDate) {
+        final String insertQuery =
+                "INSERT INTO plant_disease ("  + withComma("plant_info_id") + withComma("greenhouse_id")
+                        + withComma("disease_id") + withComma("solution_id") + withComma("applied_date")
+                        + encapFieldWithBackTick("resolved_date") + ") VALUES "
+                        + getStatementParams(6);
+
+        return this.jdbcTemplate().update(insertQuery, plantId, greenhouseId, diseaseId, solutionId, appliedDate, resolvedDate);
     }
 }

@@ -21,6 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Random;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.teamgreen.greenhouse.constants.Constants.INTERNAL_SERVER_ERROR_MSG;
 
@@ -35,11 +38,9 @@ public class HarvestingController {
     @Autowired
     RestTemplate restTemplate;
 
-    @Value("${remote.harvest.url}")
-    private String remoteUrl;
-
     private static final Logger logger = LoggerFactory.getLogger(HarvestingController.class);
-    FileUtils fileUtils;
+    LocalDate start = LocalDate.of(2019, Month.OCTOBER, 14);
+    LocalDate end = LocalDate.now();
 
     private HarvestingDbHandler handler;
 
@@ -72,8 +73,113 @@ public class HarvestingController {
     @Scheduled(fixedRate = 5000)
     public void feedLightIntensityValue() {
         int[] nodeSensorList = {3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36};
-        for (Integer nodeSensorId: nodeSensorList) {
+        for (Integer nodeSensorId : nodeSensorList) {
             handler.addLightIntensity(nodeSensorId);
+        }
+    }
+
+    @Scheduled(fixedRate = 5000)
+    public void plantDiseaseGenerator() {
+        int plantId = (int) ((Math.random() * (4 - 1)) + 1);
+        int locationId = (int) ((Math.random() * (4 - 1)) + 1);
+        selectGreenhouse(plantId, locationId);
+    }
+
+    public void selectGreenhouse(int plantId, int locationId) {
+        if (locationId == 1) {
+            int greenhouseNumber = (int) ((Math.random() * (3 - 1)) + 1);
+            generatePlantDiseaseBadulla(plantId, greenhouseNumber);
+        } else if (locationId == 2) {
+            int greenhouseNumber = (int) ((Math.random() * (5 - 3)) + 3);
+            generatePlantDiseasePadukka(plantId, greenhouseNumber);
+        } else {
+            int greenhouseNumber = (int) ((Math.random() * (7 - 5)) + 5);
+            generatePlantDiseasePuttalam(plantId, greenhouseNumber);
+        }
+    }
+
+    public  LocalDate between(LocalDate startInclusive, LocalDate endExclusive) {
+        long startEpochDay = startInclusive.toEpochDay();
+        long endEpochDay = endExclusive.toEpochDay();
+        long randomDay = ThreadLocalRandom
+                .current()
+                .nextLong(startEpochDay, endEpochDay);
+
+        return LocalDate.ofEpochDay(randomDay);
+    }
+
+    public int generatePlantDiseaseBadulla(int plantId, int greenhouseId) {
+        int diseaseId = generateDiseaseId(plantId);
+        int solutionId = generateSolutionId(diseaseId);
+        int date = generateDateRangeBadulla(solutionId);
+        LocalDate startDate = between(start, end);
+        LocalDate endDate =  startDate.plusDays(date);
+        return handler.addPlantDisease(plantId, greenhouseId, diseaseId, solutionId, startDate.toString(), endDate.toString());
+    }
+
+    public int generatePlantDiseasePadukka(int plantId, int greenhouseId) {
+        int diseaseId = generateDiseaseId(plantId);
+        int solutionId = generateSolutionId(diseaseId);
+        int date = generateDateRangePadukka(solutionId);
+        LocalDate startDate = between(start, end);
+        LocalDate endDate =  startDate.plusDays(date);
+        return handler.addPlantDisease(plantId, greenhouseId, diseaseId, solutionId, startDate.toString(), endDate.toString());
+    }
+
+    public int generatePlantDiseasePuttalam(int plantId, int greenhouseId) {
+        int diseaseId = generateDiseaseId(plantId);
+        int solutionId = generateSolutionId(diseaseId);
+        int date = generateDateRangePuttalam(solutionId);
+        LocalDate startDate = between(start, end);
+        LocalDate endDate =  startDate.plusDays(date);
+        return handler.addPlantDisease(plantId, greenhouseId, diseaseId, solutionId, startDate.toString(), endDate.toString());
+    }
+
+    public int generateDiseaseId(int plantId){
+        if (plantId == 1) {
+            return (int) ((Math.random() * (10 - 1)) + 1);
+        } else if (plantId == 2) {
+            return (int) ((Math.random() * (12 - 10)) + 10);
+        } else {
+            return 12;
+        }
+    }
+
+    public int generateSolutionId(int diseaseid) {
+        int num = (int) ((Math.random() * (4 - 1)) + 1);
+        return ((diseaseid - 1) * 3) + num;
+    }
+
+    public int generateDateRangeBadulla(int solutionId) {
+        int num = solutionId % 3;
+        if (num == 0) {
+            return (int) ((Math.random() * (9 - 5)) + 5);
+        } else if (num == 1) {
+            return (int) ((Math.random() * (7 - 4)) + 4);
+        } else {
+            return (int) ((Math.random() * (6 - 2)) + 2);
+        }
+    }
+
+    public int generateDateRangePadukka(int solutionId) {
+        int num = solutionId % 3;
+        if (num == 0) {
+            return (int) ((Math.random() * (7 - 4)) + 4);
+        } else if (num == 1) {
+            return (int) ((Math.random() * (6 - 2)) + 2);
+        } else {
+            return (int) ((Math.random() * (9 - 5)) + 5);
+        }
+    }
+
+    public int generateDateRangePuttalam(int solutionId) {
+        int num = solutionId % 3;
+        if (num == 0) {
+            return (int) ((Math.random() * (6 - 2)) + 2);
+        } else if (num == 1) {
+            return (int) ((Math.random() * (9 - 5)) + 5);
+        } else {
+            return (int) ((Math.random() * (7 - 4)) + 4);
         }
     }
 }
